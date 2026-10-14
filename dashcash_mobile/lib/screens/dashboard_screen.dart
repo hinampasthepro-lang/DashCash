@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:convert';
 import 'login_screen.dart';
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -60,6 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 401) {
         _handleUnauthorized();
         return;
@@ -85,8 +87,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
+      if (!mounted) return;
       if (response.statusCode == 401) {
         _handleUnauthorized();
         return;
@@ -96,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final data = jsonDecode(response.body);
         setState(() {
           _balance =
-              '\$${data['balance'].toStringAsFixed(2)}${data['currency'] ?? 'USD'}';
+              '\$${(data['balance'] as num?)?.toStringAsFixed(2) ?? '0.00'} ${data['currency'] ?? 'USD'}';
         });
       }
     } catch (_) {}
@@ -115,6 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 401) {
         _handleUnauthorized();
         return;
@@ -186,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   items: const [
                     DropdownMenuItem(value: 'Deposit', child: Text('Deposit')),
                     DropdownMenuItem(
@@ -317,6 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Network error. Check connection and try again.')),
@@ -364,6 +369,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Network error. Please try again.')),
       );
@@ -373,9 +379,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _logout() async {
     await _storage.delete(key: 'jwt_token');
     if (!mounted) return;
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
     );
   }
 
@@ -384,6 +391,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('DASHCASH Dashboard'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.send),
@@ -391,9 +399,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tooltip: 'Send Money',
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-            tooltip: 'Logout',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            tooltip: 'Settings',
           ),
         ],
       ),
@@ -410,6 +423,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
               onTap: _logout,
@@ -424,7 +448,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Wallet Balance Card
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
@@ -452,7 +475,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Pie Chart Summary
               SizedBox(
                 height: 150,
                 child: PieChart(
@@ -461,16 +483,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       PieChartSectionData(
                         color: Colors.green,
                         value: _transactions
-                            .where((t) => (t['amount'] as num) >= 0)
-                            .fold(0.0, (sum, t) => sum + (t['amount'] as num)),
+                            .where((t) => ((t['amount'] as num?) ?? 0) >= 0)
+                            .fold<double>(
+                                0.0,
+                                (sum, t) =>
+                                    sum +
+                                    ((t['amount'] as num?)?.toDouble() ?? 0.0)),
                         title: 'In',
                         radius: 50,
                       ),
                       PieChartSectionData(
                         color: Colors.red,
                         value: _transactions
-                            .where((t) => (t['amount'] as num) < 0)
-                            .fold(0.0, (sum, t) => sum + (t['amount'] as num))
+                            .where((t) => ((t['amount'] as num?) ?? 0) < 0)
+                            .fold<double>(
+                                0.0,
+                                (sum, t) =>
+                                    sum +
+                                    ((t['amount'] as num?)?.toDouble() ?? 0.0))
                             .abs(),
                         title: 'Out',
                         radius: 50,
@@ -519,7 +549,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             itemCount: _filteredTransactions.length,
                             itemBuilder: (context, index) {
                               final tx = _filteredTransactions[index];
-                              final amount = tx['amount'] as num;
+                              final amount = (tx['amount'] as num?) ?? 0;
                               final isDeposit = amount >= 0;
                               return Card(
                                 elevation: 2,
@@ -537,7 +567,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           isDeposit ? Colors.green : Colors.red,
                                     ),
                                   ),
-                                  title: Text(tx['title'],
+                                  title: Text(tx['title'] ?? 'Transaction',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold)),
                                   subtitle: Text(tx['type'] ??
@@ -562,8 +592,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTransactionDialog,
-        child: const Icon(Icons.add),
         tooltip: 'Add Transaction',
+        child: const Icon(Icons.add),
       ),
     );
   }

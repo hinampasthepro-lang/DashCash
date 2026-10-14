@@ -1,5 +1,5 @@
 name: dashcash_mobile
-description: "A new Flutter project."
+description: "DashCash mobile application frontend"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -12,12 +12,25 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   http: ^1.2.0
   fl_chart: ^0.68.0
-  local_auth: ^2.3.0
+  local_auth: ^2.1.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: "^0.13.1"
+  flutter_native_splash: "^2.3.9"
+
+flutter_launcher_icons:
+  image_path: "assets/icon/dashcash_logo.png"
+  android: true
+  ios: true
+
+flutter_native_splash:
+  color: "#1E88E5"
+  image: "assets/splash/dashcash_splash.png"
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true

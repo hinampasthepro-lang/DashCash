@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,15 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
+    });
+});
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.PermitLimit = 5; // Max 5 attempts
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
     });
 });
 
@@ -54,11 +64,24 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddControllers();
 
+// === BUILD THE APP FIRST ===
 var app = builder.Build();
+
+// === USE APP CONFIGURATIONS AFTER IT IS BUILT ===
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new { message = "An unexpected error occurred. Please try again later." });
+    });
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -69,13 +92,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Enable CORS before Authentication/Authorization
+app.UseMiddleware<DashCash.Middleware.ExceptionMiddleware>();
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
+app.UseRateLimiter();
+app.MapControllers();
 app.MapGet("/ping", () => "pong");
 app.Run();
 

@@ -1,0 +1,54 @@
+[
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_secondary_text_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_secondary_text_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_hint_foreground_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_hint_foreground_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_background_cache_hint_selector_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_background_cache_hint_selector_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_secondary_text_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_secondary_text_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_primary_text_disable_only_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_primary_text_disable_only_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_hint_foreground_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_hint_foreground_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_background_cache_hint_selector_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_background_cache_hint_selector_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_primary_text_disable_only_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_primary_text_disable_only_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_primary_text_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_primary_text_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/switch_thumb_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/switch_thumb_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/switch_thumb_material_dark.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/switch_thumb_material_dark.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_primary_text_material_light.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_primary_text_material_light.xml"
+    },
+    {
+        "merged": "io.flutter.plugins.localauth.local_auth_android-release-29:/color/abc_search_url_text.xml",
+        "source": "io.flutter.plugins.localauth.local_auth_android-appcompat-1.2.0-21:/color/abc_search_url_text.xml"
+    }
+]

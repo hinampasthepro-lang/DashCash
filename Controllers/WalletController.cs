@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DashCash.Data;
 using System.Security.Claims;
+using DashCash.Models;
 
 namespace DashCash.Controllers
 {

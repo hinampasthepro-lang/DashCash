@@ -5,7 +5,7 @@ import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -14,19 +14,24 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   final _apiService = ApiService();
   final _storage = const FlutterSecureStorage();
   final LocalAuthentication _localAuth = LocalAuthentication();
 
-  bool _isLoginMode = true; // True = Login mode, False = Register mode
+  bool _isLoginMode = true;
   bool _isLoading = false;
   String _errorMessage = '';
 
   @override
   void dispose() {
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -45,15 +50,15 @@ class _LoginScreenState extends State<LoginScreen> {
       bool authenticated = await _localAuth.authenticate(
         localizedReason: 'Authenticate to access your DashCash wallet',
         options: const AuthenticationOptions(
-          stickyAuthentication: true,
+          stickyAuth: true,
           biometricOnly: true,
         ),
       );
 
       if (authenticated) {
         String? token = await _storage.read(key: 'jwt_token');
+        if (!mounted) return;
         if (token != null && token.isNotEmpty) {
-          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -72,8 +77,73 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showPostRegistrationOptions() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Account Created! 🎉',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Your account has been registered successfully. How would you like to proceed?',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14)),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/dashboard',
+                  (route) => false,
+                );
+              },
+              icon: const Icon(Icons.flash_on),
+              label: const Text('Go Straight to My Account'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14)),
+              onPressed: () {
+                Navigator.pop(context); // Close bottom sheet
+                setState(() {
+                  _isLoginMode = true;
+                  _passwordController.clear();
+                  _confirmPasswordController.clear();
+                  _phoneController.clear();
+                });
+              },
+              icon: const Icon(Icons.login),
+              label: const Text('Sign In Manually'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (!_isLoginMode &&
+        _passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Passwords do not match.';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -88,25 +158,21 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text.trim(),
       );
     } else {
+      // Pass registration data including email, phone, and password confirmation
       errorResult = await _apiService.register(
         _emailController.text.trim(),
+        _phoneController.text.trim(),
         _passwordController.text.trim(),
+        _confirmPasswordController.text.trim(),
       );
 
+      setState(() {
+        _isLoading = false;
+      });
+
       if (errorResult == null) {
-        setState(() {
-          _isLoginMode = true;
-          _isLoading = false;
-          _errorMessage = '';
-          _passwordController.clear();
-        });
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration Successful! Please log in.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        _showPostRegistrationOptions();
         return;
       }
     }
@@ -168,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     _isLoginMode
                         ? 'Sign in to your account'
-                        : 'Create a new account',
+                        : 'Create a new secure account',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
@@ -185,6 +251,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? 'Please enter your email'
                         : null,
                   ),
+                  if (!_isLoginMode) ...[
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number (for OTP verification)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.phone),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Please enter your phone number'
+                          : null,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
@@ -204,6 +285,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
+                  if (!_isLoginMode) ...[
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm Password',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                      validator: (value) {
+                        if (!_isLoginMode && (value == null || value.isEmpty)) {
+                          return 'Please confirm your password';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   if (_errorMessage.isNotEmpty)
                     Padding(
@@ -220,13 +319,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             ElevatedButton(
-                              onPressed: _submitForm,
                               style: ElevatedButton.styleFrom(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                               ),
+                              onPressed: _submitForm,
                               child: Text(
-                                _isLoginMode ? 'Login' : 'Register',
+                                _isLoginMode ? 'Login' : 'Register & Verify',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -236,13 +335,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (_isLoginMode) ...[
                               const SizedBox(height: 12),
                               OutlinedButton.icon(
-                                onPressed: _authenticateWithBiometrics,
-                                icon: const Icon(Icons.fingerprint),
-                                label: const Text('Sign in with Biometrics'),
                                 style: OutlinedButton.styleFrom(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 14),
                                 ),
+                                onPressed: _authenticateWithBiometrics,
+                                icon: const Icon(Icons.fingerprint),
+                                label: const Text('Sign in with Biometrics'),
                               ),
                             ],
                           ],

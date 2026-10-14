@@ -6,7 +6,7 @@ void main() {
 }
 
 class DashCashApp extends StatelessWidget {
-  const DashCashApp({Key? key}) : super(key: key);
+  const DashCashApp({super.key}); // <--- Updated to super parameter
 
   @override
   Widget build(BuildContext context) {

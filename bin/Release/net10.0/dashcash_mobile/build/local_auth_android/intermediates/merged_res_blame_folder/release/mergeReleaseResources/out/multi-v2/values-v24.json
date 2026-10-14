@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "io.flutter.plugins.localauth.local_auth_android-release-29:/values-v24/values-v24.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Emmanuel\\.gradle\\caches\\9.3.1\\transforms\\aa68329c59e58390d036b9224776a8dd\\workspace\\transformed\\appcompat-1.2.0\\res\\values-v24\\values-v24.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,212",
+                        "endColumns": "156,134",
+                        "endOffsets": "207,342"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "io.flutter.plugins.localauth.local_auth_android-mergeReleaseResources-27:/values-v24/values-v24.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Emmanuel\\.gradle\\caches\\9.3.1\\transforms\\aa68329c59e58390d036b9224776a8dd\\workspace\\transformed\\appcompat-1.2.0\\res\\values-v24\\values-v24.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,212",
+                        "endColumns": "156,134",
+                        "endOffsets": "207,342"
+                    }
+                }
+            ]
+        }
+    ]
+}
